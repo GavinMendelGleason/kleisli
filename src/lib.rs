@@ -85,30 +85,56 @@ impl<A: Copy, U: IntoIterator, S: IntoIterator, F: FnMut(A) -> U, G: FnMut(U::It
     }
 }
 
+fn compile(y: usize) -> impl Fn(usize) -> Vec<usize> {
+    move |x| {
+        let mut vec = Vec::new();
+        for i in x..y {
+            vec.push(i);
+        }
+        vec
+    }
+}
+
+use fp_rust::fp::foldr;
+
+fn ret(x: usize) -> Vec<usize> {
+    vec![x]
+}
+
+fn compose_repeat(v: Vec<usize>) -> impl Fn(usize) -> Vec<usize> {
+    foldr(|f, x| |y| f(x).iter().flatmap(, &ret, v)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
 
     #[test]
     fn clone_it() {
-        let db = vec![(1, 2), (2, 3), (3, 4), (1, 5), (5, 7)];
-        let iter = db.into_iter();
-        let iter2 = iter.clone();
-        let iter3 = iter.clone();
-        let res: Vec<_> = iter
-            .flat_map(|i| {
-                ApplyKleisliCompose::new(
-                    i,
-                    kleisli_compose(
-                        move |t: (usize, usize)| {
-                            iter3.clone().map(|x| x.1).filter(move |x| *x == t.0)
-                        },
-                        move |s| iter2.clone().map(|x| x.1).filter(move |x| *x == s),
-                    ),
-                )
-            })
-            .collect();
-        eprintln!("{res:?}");
-        panic!()
+        todo!()
     }
+    /*
+        #[test]
+        fn clone_it() {
+            let db = vec![(1, 2), (2, 3), (3, 4), (1, 5), (5, 7)];
+            let iter = db.into_iter();
+            let iter2 = iter.clone();
+            let iter3 = iter.clone();
+            let res: Vec<_> = iter
+                .flat_map(|i| {
+                    ApplyKleisliCompose::new(
+                        i,
+                        kleisli_compose(
+                            move |t: (usize, usize)| {
+                                iter3.clone().map(|x| x.1).filter(move |x| *x == t.0)
+                            },
+                            move |s| iter2.clone().map(|x| x.1).filter(move |x| *x == s),
+                        ),
+                    )
+                })
+                .collect();
+            eprintln!("{res:?}");
+            panic!()
+        }
+    */
 }
